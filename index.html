@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rompecabezas Interactivo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            margin-top: 20px;
+        }
+        .piece, .slot {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .piece {
+            cursor: grab;
+            background-size: 300px 300px; /* Tamaño total de la imagen */
+            background-position: center;
+        }
+        .slot {
+            background-color: #fff;
+        }
+        /* Agrega partes de la imagen del nómada a las piezas */
+        .piece[data-id="1"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: 0 0;
+        }
+        .piece[data-id="2"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: -100px 0;
+        }
+        .piece[data-id="3"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: -200px 0;
+        }
+        .piece[data-id="4"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: 0 -100px;
+        }
+        .piece[data-id="5"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: -100px -100px;
+        }
+        .piece[data-id="6"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: -200px -100px;
+        }
+        .piece[data-id="7"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: 0 -200px;
+        }
+        .piece[data-id="8"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: -100px -200px;
+        }
+        .piece[data-id="9"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg');
+            background-position: -200px -200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rompecabezas Interactivo</h1>
+    <p>Arrastra las piezas al lugar correcto.</p>
+    <div id="puzzle-container">
+        <div class="slot" data-id="1"></div>
+        <div class="slot" data-id="2"></div>
+        <div class="slot" data-id="3"></div>
+        <div class="slot" data-id="4"></div>
+        <div class="slot" data-id="5"></div>
+        <div class="slot" data-id="6"></div>
+        <div class="slot" data-id="7"></div>
+        <div class="slot" data-id="8"></div>
+        <div class="slot" data-id="9"></div>
+        <div class="piece" draggable="true" data-id="1"></div>
+        <div class="piece" draggable="true" data-id="2"></div>
+        <div class="piece" draggable="true" data-id="3"></div>
+        <div class="piece" draggable="true" data-id="4"></div>
+        <div class="piece" draggable="true" data-id="5"></div>
+        <div class="piece" draggable="true" data-id="6"></div>
+        <div class="piece" draggable="true" data-id="7"></div>
+        <div class="piece" draggable="true" data-id="8"></div>
+        <div class="piece" draggable="true" data-id="9"></div>
+    </div>
+
+    <script>
+        const pieces = document.querySelectorAll('.piece');
+        const slots = document.querySelectorAll('.slot');
+
+        pieces.forEach(piece => {
+            piece.addEventListener('dragstart', dragStart);
+        });
+
+        slots.forEach(slot => {
+            slot.addEventListener('dragover', dragOver);
+            slot.addEventListener('drop', drop);
+        });
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const pieceId = e.dataTransfer.getData('text/plain');
+            const piece = document.querySelector(`.piece[data-id="${pieceId}"]`);
+            if (e.target.dataset.id === pieceId) {
+                e.target.appendChild(piece);
+                piece.style.cursor = 'default';
+                piece.setAttribute('draggable', 'false');
+            }
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Unir Columnas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        #game-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-top: 20px;
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        .item, .target {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            cursor: grab;
+        }
+        .target {
+            background-color: #fff;
+            border: 2px dashed #ccc;
+        }
+        .target.correct {
+            background-color: #c8e6c9; /* Verde claro para correcto */
+            border-color: #4caf50;
+        }
+        .target.incorrect {
+            background-color: #ffcdd2; /* Rojo claro para incorrecto */
+            border-color: #f44336;
+        }
+        .item, .target {
+        width: 40%;
+        height: 100px;
+        margin: 10px 0;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f0f0f0;
+        cursor: grab;
+        background-size: cover; /* La imagen cubrirá todo el espacio del contenedor */
+        background-repeat: no-repeat; /* Evita que la imagen se repita */
+        background-position: center; /* Centra la imagen */
+        }
+        /*agrega imagenes a los items*/
+        .item[data-id="1"] {
+            background-image: url('https://img.freepik.com/vector-premium/escena-fondo-cueva-rocosa-oscura_43633-6704.jpg');
+
+        }
+
+        .item[data-id="2"] {
+            background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg')
+        }
+
+        .item[data-id="3"] {
+            background-image: url('https://previews.123rf.com/images/tigatelu/tigatelu1408/tigatelu140800030/30329452-ilustraci%C3%B3n-de-una-fogata-en-blanco.jpg')
+        }
+
+        .item[data-id="4"] {
+            background-image: url('https://previews.123rf.com/images/destinacigdem/destinacigdem2109/destinacigdem210900054/174264898-rueda-de-piedra-aislada-sobre-fondo-blanco-ilustraci%C3%B3n-3d.jpg')
+        }
+
+        .item[data-id="5"] {
+            background-image: url('https://media.istockphoto.com/id/1021593346/es/foto/antigua-lanza-aislado-sobre-fondo-blanco.jpg?s=612x612&w=0&k=20&c=wrKb1ZaQr_jEdKBDN1aDyByVEX2g8rq38bj-XYlOj7k=')
+        }
+        </style>
+    </style>
+</head>
+<body>
+    <h1>Juego de Unir Columnas</h1>
+    <p>Arrastra los elementos de la izquierda y suéltalos en la columna correcta.</p>
+    <div id="game-container">
+        <div class="column" id="left-column">
+            <div class="item" draggable="true" data-id="1"></div>
+            <div class="item" draggable="true" data-id="2"></div>
+            <div class="item" draggable="true" data-id="3"></div>
+            <div class="item" draggable="true" data-id="4"></div>
+            <div class="item" draggable="true" data-id="5"></div>
+        </div>
+        <div class="column" id="right-column">
+            <div class="target"  data-id="2">Selecciona los nomada</div>
+            <div class="target" data-id="4">Une el objeto en piedra</div>
+            <div class="target" data-id="5">Herramienta para cazar</div>
+            <div class="target" data-id="1">Vivenda donde habitaban los nomadas</div>
+            <div class="target" data-id="3">invento de los nomadas para mantener el calor</div>
+        </div>
+    </div>
+
+    <script>
+    const items = document.querySelectorAll('.item');
+    const targets = document.querySelectorAll('.target');
+
+    items.forEach(item => {
+        item.addEventListener('dragstart', dragStart);
+    });
+
+    targets.forEach(target => {
+        target.addEventListener('dragover', dragOver);
+        target.addEventListener('drop', drop);
+    });
+
+    function dragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.dataset.id);
+    }
+
+    function dragOver(e) {
+        e.preventDefault();
+    }
+
+    function drop(e) {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    const targetId = e.target.dataset.id;
+
+    if (itemId === targetId) {
+        const item = document.querySelector(`.item[data-id="${itemId}"]`);
+        if (item) {
+            e.target.classList.add('correct');
+            e.target.style.backgroundImage = window.getComputedStyle(item).backgroundImage; // Obtiene la imagen del item
+            e.target.style.backgroundSize = 'cover'; // Asegura que la imagen ocupe todo el espacio
+            e.target.style.backgroundPosition = 'center'; // Centra la imagen
+            e.target.style.backgroundRepeat = 'no-repeat'; // Evita que la imagen se repita
+            item.remove(); // Elimina el item después de colocarlo
+        }
+    } else {
+        e.target.classList.add('incorrect');
+        setTimeout(() => e.target.classList.remove('incorrect'), 1000);
+    }
+}
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preguntas Tipo ICFES</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .question-container {
+            width: 80%;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin-bottom: 10px;
+        }
+        .options li button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+        }
+        .options li button.correct {
+            background-color: #c8e6c9; /* Verde claro */
+        }
+        .options li button.incorrect {
+            background-color: #ffcdd2; /* Rojo claro */
+        }
+    </style>
+</head>
+<body>
+    <h1>Preguntas Tipo ICFES</h1>
+    <div class="question-container" id="question1">
+        <p class="question">1. ¿Época donde los seres humanos son nómadas y sedentarios?</p>
+        <ul class="options">
+            <li><button onclick="checkAnswer(this, true)">A. Historia</button></li>
+            <li><button onclick="checkAnswer(this, false)">B. Edad antigua</button></li>
+            <li><button onclick="checkAnswer(this, false)">C. Edad moderna</button></li>
+            <li><button onclick="checkAnswer(this, false)">D. Prehistoria</button></li>
+        </ul>
+    </div>
+    <div class="question-container" id="question2">
+        <p class="question">2. ¿Cuál es el resultado de 5 + 3?</p>
+        <ul class="options">
+            <li><button onclick="checkAnswer(this, false)">A. 6</button></li>
+            <li><button onclick="checkAnswer(this, true)">B. 8</button></li>
+            <li><button onclick="checkAnswer(this, false)">C. 9</button></li>
+            <li><button onclick="checkAnswer(this, false)">D. 7</button></li>
+        </ul>
+    </div>
+
+    <script>
+        function checkAnswer(button, isCorrect) {
+            if (isCorrect) {
+                button.classList.add('correct');
+                alert('¡Respuesta correcta!');
+            } else {
+                button.classList.add('incorrect');
+                alert('Respuesta incorrecta. Intenta de nuevo.');
+            }
+            // Deshabilitar todos los botones de la pregunta
+            const buttons = button.parentElement.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = true);
+        }
+    </script>
+</body>
+</html>
