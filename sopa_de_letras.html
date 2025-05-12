@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sopa de Letras: Edad de los Metales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #3a2c60;
+            margin-top: 30px;
+            text-shadow: 2px 2px 8px #fff8;
+        }
+        .wordsearch-container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 #3a2c6033;
+            padding: 30px 40px;
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        table {
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        td {
+            width: 38px;
+            height: 38px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: 2px solid #8ec5fc;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+            border-radius: 8px;
+            background: #f3f8ff;
+        }
+        td.selected {
+            background: #ffe082;
+            color: #3a2c60;
+        }
+        td.found {
+            color: #fff;
+        }
+        .words-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .word {
+            background: #8ec5fc;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 12px;
+            font-size: 1em;
+            margin: 2px 0;
+            transition: background 0.2s;
+        }
+        .word.found {
+            text-decoration: line-through;
+        }
+        .footer {
+            color: #3a2c60;
+            margin-top: 20px;
+            font-size: 0.95em;
+            opacity: 0.7;
+        }
+        /* Colores personalizados para cada palabra */
+        .found-COBRE    { background: #b87333 !important; color: #fff !important; }
+        .found-BRONCE   { background: #cd7f32 !important; color: #fff !important; }
+        .found-HIERRO   { background: #43464b !important; color: #fff !important; }
+        .found-ORO      { background: #ffd700 !important; color: #3a2c60 !important; }
+        .found-PLATA    { background: #c0c0c0 !important; color: #3a2c60 !important; }
+        .found-YUNQUE   { background: #e53935 !important; color: #fff !important; }
+        .found-ESPADA   { background: #607d8b !important; color: #fff !important; }
+        .found-CASCO    { background: #ffb300 !important; color: #3a2c60 !important; }
+        .found-MINA     { background: #6d4c41 !important; color: #fff !important; }
+        .found-FUNDICION{ background: #8d6e63 !important; color: #fff !important; }
+        /* Temporizador */
+        #timer {
+            position: fixed;
+            top: 24px;
+            right: 40px;
+            background: #fff;
+            color: #3a2c60;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4em;
+            font-weight: bold;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px #3a2c6033;
+            padding: 12px 28px;
+            z-index: 1000;
+            letter-spacing: 2px;
+            border: 2px solid #8ec5fc;
+            transition: background 0.3s, color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sopa de Letras: Edad de los Metales</h1>
+    <div class="wordsearch-container">
+        <div class="words-list" id="wordsList"></div>
+        <table id="wordsearch"></table>
+    </div>
+    <div class="footer">Encuentra todas las palabras relacionadas con la Edad de los Metales</div>
+    <div id="timer"></div>
+    <script>
+        // Palabras sobre la Edad de los Metales
+        const WORDS = [
+            "COBRE", "BRONCE", "HIERRO", "ORO", "PLATA",
+            "YUNQUE", "ESPADA", "CASCO", "MINA", "FUNDICION"
+        ];
+
+        // Tamaño de la sopa de letras
+        const SIZE = 10;
+
+        // Direcciones posibles: [dx, dy]
+        const DIRECTIONS = [
+            [1, 0],   // derecha
+            [0, 1],   // abajo
+            [1, 1],   // diagonal abajo derecha
+            [-1, 0],  // izquierda
+            [0, -1],  // arriba
+            [-1, -1], // diagonal arriba izquierda
+            [1, -1],  // diagonal arriba derecha
+            [-1, 1],  // diagonal abajo izquierda
+        ];
+
+        // Generar la sopa de letras
+        function generateGrid(words, size) {
+            let grid = Array.from({length: size}, () => Array(size).fill(''));
+            let placedWords = [];
+
+            for (let word of words) {
+                let placed = false;
+                for (let tries = 0; tries < 100 && !placed; tries++) {
+                    let dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+                    let row = Math.floor(Math.random() * size);
+                    let col = Math.floor(Math.random() * size);
+
+                    // Verifica si cabe
+                    let fits = true;
+                    for (let i = 0; i < word.length; i++) {
+                        let r = row + dir[1] * i;
+                        let c = col + dir[0] * i;
+                        if (r < 0 || r >= size || c < 0 || c >= size) {
+                            fits = false;
+                            break;
+                        }
+                        if (grid[r][c] && grid[r][c] !== word[i]) {
+                            fits = false;
+                            break;
+                        }
+                    }
+                    if (!fits) continue;
+
+                    // Coloca la palabra
+                    for (let i = 0; i < word.length; i++) {
+                        let r = row + dir[1] * i;
+                        let c = col + dir[0] * i;
+                        grid[r][c] = word[i];
+                    }
+                    placedWords.push({word, row, col, dir});
+                    placed = true;
+                }
+            }
+
+            // Rellena espacios vacíos
+            const letters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    if (!grid[r][c]) {
+                        grid[r][c] = letters[Math.floor(Math.random() * letters.length)];
+                    }
+                }
+            }
+            return {grid, placedWords};
+        }
+
+        // Renderiza la sopa de letras
+        function renderGrid(grid) {
+            const table = document.getElementById('wordsearch');
+            table.innerHTML = '';
+            for (let r = 0; r < SIZE; r++) {
+                const row = document.createElement('tr');
+                for (let c = 0; c < SIZE; c++) {
+                    const cell = document.createElement('td');
+                    cell.textContent = grid[r][c];
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+        }
+
+        // Renderiza la lista de palabras
+        function renderWords(words) {
+            const list = document.getElementById('wordsList');
+            list.innerHTML = '';
+            for (let word of words) {
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.textContent = word;
+                span.id = 'word-' + word;
+                list.appendChild(span);
+            }
+        }
+
+        // Selección de celdas
+        let selecting = false;
+        let startCell = null;
+        let selectedCells = [];
+        let foundWords = [];
+
+        function getCell(row, col) {
+            return document.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+        }
+
+        function clearSelection() {
+            for (let cell of selectedCells) {
+                cell.classList.remove('selected');
+            }
+            selectedCells = [];
+        }
+
+        function markFound(cells, word) {
+            for (let cell of cells) {
+                cell.classList.remove('selected');
+                cell.classList.add('found', 'found-' + word);
+            }
+            const wordSpan = document.getElementById('word-' + word);
+            wordSpan.classList.add('found', 'found-' + word);
+            foundWords.push(word);
+            if (foundWords.length === WORDS.length) {
+                setTimeout(() => {
+                    alert('¡Felicidades! Encontraste todas las palabras.');
+                }, 200);
+            }
+        }
+
+        function getSelectedWord(cells) {
+            return cells.map(cell => cell.textContent).join('');
+        }
+
+        function handleCellDown(e) {
+            if (e.target.tagName !== 'TD') return;
+            selecting = true;
+            startCell = e.target;
+            clearSelection();
+            e.target.classList.add('selected');
+            selectedCells = [e.target];
+        }
+
+        function handleCellOver(e) {
+            if (!selecting || e.target.tagName !== 'TD') return;
+            clearSelection();
+            const startRow = parseInt(startCell.dataset.row);
+            const startCol = parseInt(startCell.dataset.col);
+            const endRow = parseInt(e.target.dataset.row);
+            const endCol = parseInt(e.target.dataset.col);
+
+            // Calcula dirección
+            const dx = Math.sign(endCol - startCol);
+            const dy = Math.sign(endRow - startRow);
+
+            // Solo permite líneas rectas
+            if (dx === 0 && dy === 0) return;
+
+            let cells = [];
+            let r = startRow, c = startCol;
+            while (true) {
+                let cell = getCell(r, c);
+                if (cell) cells.push(cell);
+                if (r === endRow && c === endCol) break;
+                r += dy;
+                c += dx;
+            }
+            for (let cell of cells) {
+                cell.classList.add('selected');
+            }
+            selectedCells = cells;
+        }
+
+        function handleCellUp(e) {
+            if (!selecting) return;
+            selecting = false;
+            const word = getSelectedWord(selectedCells);
+            const reversed = word.split('').reverse().join('');
+            let found = null;
+            for (let w of WORDS) {
+                if ((word === w || reversed === w) && !foundWords.includes(w)) {
+                    found = w;
+                    break;
+                }
+            }
+            if (found) {
+                markFound(selectedCells, found);
+            } else {
+                clearSelection();
+            }
+        }
+
+        // Inicializa la sopa de letras
+        const {grid} = generateGrid(WORDS, SIZE);
+        renderGrid(grid);
+        renderWords(WORDS);
+
+        // Eventos de selección
+        const table = document.getElementById('wordsearch');
+        table.addEventListener('mousedown', handleCellDown);
+        table.addEventListener('mouseover', handleCellOver);
+        document.addEventListener('mouseup', handleCellUp);
+
+        // Soporte para pantallas táctiles
+        table.addEventListener('touchstart', function(e) {
+            const touch = e.touches[0];
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (target && target.tagName === 'TD') {
+                handleCellDown({target});
+            }
+        });
+        table.addEventListener('touchmove', function(e) {
+            const touch = e.touches[0];
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (target && target.tagName === 'TD') {
+                handleCellOver({target});
+            }
+        });
+        table.addEventListener('touchend', function(e) {
+            handleCellUp({});
+        });
+
+        // Temporizador elegante de 1 minuto
+        const timerDiv = document.getElementById('timer');
+        let seconds = 60;
+        function updateTimer() {
+            let min = Math.floor(seconds / 60);
+            let seg = seconds % 60;
+            timerDiv.textContent = `⏰ ${min}:${seg.toString().padStart(2, '0')}`;
+            if (seconds <= 10) {
+                timerDiv.style.background = "#e53935";
+                timerDiv.style.color = "#fff";
+            }
+        }
+        updateTimer();
+        const timerInterval = setInterval(() => {
+            seconds--;
+            updateTimer();
+            if (seconds <= 0) {
+                clearInterval(timerInterval);
+                window.location.href = "../Edad de los metales/EdadMetales.html";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

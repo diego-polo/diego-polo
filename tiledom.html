@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tiledom Paleolítico</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 30px;
+            color: #333;
+        }
+        #timer {
+            font-size: 1.2rem;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        #gameBoard {
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: repeat(7, 60px);
+            grid-auto-rows: 60px;
+            gap: 8px;
+            width: max-content;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            padding: 20px;
+        }
+        .tile {
+            width: 60px;
+            height: 60px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .tile.selected {
+            background: #ffe082;
+            transform: scale(1.1);
+        }
+        #tray {
+            margin: 20px auto 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            min-height: 70px;
+        }
+        .tray-tile {
+            width: 60px;
+            height: 60px;
+            background: #fffde7;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 2px solid #ffd54f;
+        }
+        #message {
+            margin-top: 18px;
+            font-size: 1.2rem;
+            color: #388e3c;
+            font-weight: bold;
+        }
+        #restartBtn {
+            margin-top: 18px;
+            padding: 10px 28px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #388e3c, #8bc34a);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 2px 2px 8px #0003;
+            display: none;
+        }
+        #restartBtn:hover {
+            background: linear-gradient(145deg, #8bc34a, #388e3c);
+        }
+    </style>
+</head>
+<body>
+    <h1>Tiledom Paleolítico</h1>
+    <div id="timer">Tiempo: 60</div>
+    <div id="gameBoard"></div>
+    <div id="tray"></div>
+    <div id="message"></div>
+    <button id="restartBtn">Reiniciar</button>
+    <script>
+        // Iconos/Emojis representando objetos paleolíticos
+        const paleolithicTiles = [
+            {icon: "🪨", name: "Piedra"},
+            {icon: "🦴", name: "Hueso"},
+            {icon: "🔥", name: "Fuego"},
+            {icon: "🏹", name: "Arco"},
+            {icon: "🐺", name: "Lobo"},
+            {icon: "🍖", name: "Carne"},
+            {icon: "🦣", name: "Mamut"},
+            {icon: "👣", name: "Huella"},
+            {icon: "⛺", name: "Cueva"}
+        ];
+
+        // Generar un tablero con 27 fichas (3 de cada tipo)
+        let tiles = [];
+        function generateTiles() {
+            tiles = [];
+            paleolithicTiles.forEach(tile => {
+                for (let i = 0; i < 3; i++) {
+                    tiles.push({...tile});
+                }
+            });
+            // Mezclar
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+        }
+
+        // Lógica de capas: cada ficha puede estar tapada por otra (simulación simple)
+        function getTileLayers() {
+            // Para simplicidad, 3 capas: 9 fichas por capa, apiladas en tablero 7x4
+            let layers = [];
+            let idx = 0;
+            for (let l = 0; l < 3; l++) {
+                let layer = [];
+                for (let i = 0; i < 9; i++) {
+                    layer.push(idx++);
+                }
+                layers.push(layer);
+            }
+            return layers;
+        }
+
+        let tray = [];
+        const trayLimit = 7;
+        let layers = [];
+        let removed = new Set();
+
+        let timeLeft = 60;
+        let timerInterval;
+        let gameEnded = false;
+
+        const board = document.getElementById('gameBoard');
+        const trayDiv = document.getElementById('tray');
+        const message = document.getElementById('message');
+        const restartBtn = document.getElementById('restartBtn');
+        const timerDisplay = document.getElementById('timer');
+
+        function renderBoard() {
+            board.innerHTML = '';
+            for (let i = 0; i < tiles.length; i++) {
+                if (removed.has(i)) continue;
+                const tileDiv = document.createElement('div');
+                tileDiv.className = 'tile';
+                tileDiv.textContent = tiles[i].icon;
+                tileDiv.dataset.idx = i;
+                if (!isTileFree(i)) {
+                    tileDiv.style.opacity = 0.3;
+                    tileDiv.style.pointerEvents = 'none';
+                }
+                tileDiv.onclick = () => selectTile(i);
+                board.appendChild(tileDiv);
+            }
+        }
+
+        function renderTray() {
+            trayDiv.innerHTML = '';
+            tray.forEach(t => {
+                const tDiv = document.createElement('div');
+                tDiv.className = 'tray-tile';
+                tDiv.textContent = t.icon;
+                trayDiv.appendChild(tDiv);
+            });
+        }
+
+        function isTileFree(idx) {
+            // Una ficha es libre si no está tapada por otra en una capa superior
+            for (let l = 1; l < layers.length; l++) {
+                if (layers[l].includes(idx) && !removed.has(layers[l-1][layers[l].indexOf(idx)])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function selectTile(idx) {
+            if (!isTileFree(idx) || tray.length >= trayLimit || gameEnded) return;
+            tray.push(tiles[idx]);
+            removed.add(idx);
+            checkTray();
+            renderBoard();
+            renderTray();
+            checkWin();
+        }
+
+        function checkTray() {
+            // Si hay 3 iguales en la bandeja (no importa si están separadas), eliminarlas
+            if (tray.length < 3) return;
+            // Contar ocurrencias de cada tipo
+            let counts = {};
+            tray.forEach((t, idx) => {
+                counts[t.name] = counts[t.name] ? [...counts[t.name], idx] : [idx];
+            });
+            // Buscar si hay 3 o más de algún tipo
+            for (let name in counts) {
+                if (counts[name].length >= 3) {
+                    // Eliminar las primeras 3 ocurrencias de ese tipo
+                    // (de atrás hacia adelante para no desordenar los índices)
+                    let toRemove = counts[name].slice(0, 3).sort((a, b) => b - a);
+                    toRemove.forEach(idx => tray.splice(idx, 1));
+                    message.textContent = "¡Combinaste 3 " + name + "!";
+                    renderTray();
+                    return;
+                }
+            }
+            // Si se llena la bandeja, pierdes
+            if (tray.length >= trayLimit) {
+                endGame("¡Bandeja llena! Has perdido.");
+            }
+        }
+
+        function checkWin() {
+            if (removed.size === tiles.length) {
+                endGame("¡Felicidades! Has completado el Tiledom Paleolítico.");
+            }
+        }
+
+        function endGame(msg) {
+            gameEnded = true;
+            // No detenemos el temporizador aquí para que siga corriendo aunque pierda
+            message.textContent = msg;
+            board.style.pointerEvents = "none";
+            restartBtn.style.display = "inline-block";
+        }
+
+        function restartGame() {
+            generateTiles();
+            layers = getTileLayers();
+            tray = [];
+            removed = new Set();
+            message.textContent = "";
+            board.style.pointerEvents = "auto";
+            restartBtn.style.display = "none";
+            timeLeft = 60;
+            timerDisplay.textContent = "Tiempo: 60";
+            gameEnded = false;
+            clearInterval(timerInterval);
+            renderBoard();
+            renderTray();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerDisplay.textContent = "Tiempo: " + timeLeft;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = "Tiempo: " + timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    gameEnded = true;
+                    board.style.pointerEvents = "none";
+                    message.textContent = "¡Tiempo terminado!";
+                    setTimeout(() => {
+                        window.location.href = "../Paleolitico/juegos_paleolitico.html";
+                    }, 1500);
+                }
+            }, 1000);
+        }
+
+        restartBtn.onclick = restartGame;
+
+        // Inicializar juego
+        generateTiles();
+        layers = getTileLayers();
+        renderBoard();
+        renderTray();
+        startTimer();
+    </script>
+</body>
+</html>

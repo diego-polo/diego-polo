@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Carrera: Edad de los Metales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0e0e0 60%, #b2dfdb 100%);
+            margin: 0;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            font-family: 'Montserrat', Arial, sans-serif;
+            color: #2d2d2d;
+            margin-top: 30px;
+            letter-spacing: 2px;
+            text-shadow: 1px 2px 8px #fff;
+        }
+        #temporizador {
+            display: inline-block;
+            min-width: 220px;
+            background: linear-gradient(90deg, #fff 60%, #b2dfdb 100%);
+            border-radius: 18px;
+            box-shadow: 0 2px 12px #1976d233;
+            padding: 12px 32px;
+            font-size: 1.5em;
+            font-family: 'Montserrat', Arial, sans-serif;
+            color: #e53935;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 24px auto 10px auto;
+            border: 2px solid #1976d2;
+            text-shadow: 0 2px 8px #fff;
+            transition: background 0.3s, color 0.3s;
+        }
+        #temporizador.critico {
+            background: linear-gradient(90deg, #fff 60%, #ffebee 100%);
+            color: #b71c1c;
+            border-color: #b71c1c;
+            animation: parpadeo 1s infinite;
+        }
+        @keyframes parpadeo {
+            0%, 100% { box-shadow: 0 2px 12px #e5393555; }
+            50% { box-shadow: 0 2px 24px #e53935cc; }
+        }
+        #pista {
+            width: 700px;
+            height: 120px;
+            background: #bdb76b;
+            margin: 40px auto 0 auto;
+            border-radius: 30px;
+            position: relative;
+            box-shadow: 0 8px 32px #8888;
+            overflow: hidden;
+        }
+        /* Césped */
+        #pista::before, #pista::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0;
+            height: 18px;
+            background: linear-gradient(90deg, #388e3c 60%, #81c784 100%);
+            z-index: 1;
+        }
+        #pista::before { top: -18px; border-radius: 30px 30px 0 0; }
+        #pista::after { bottom: -18px; border-radius: 0 0 30px 30px; }
+        /* Líneas de la pista */
+        .linea-pista {
+            position: absolute;
+            top: 59px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: repeating-linear-gradient(
+                to right,
+                #fff 0 20px,
+                transparent 20px 40px
+            );
+            z-index: 2;
+            opacity: 0.7;
+        }
+        #meta {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 16px;
+            height: 120px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #fff 0 12px, #e53935 12px 24px
+            );
+            border-radius: 8px;
+            z-index: 3;
+            box-shadow: 0 0 8px #e5393555;
+        }
+        /* Carro deportivo */
+        #carro {
+            width: 80px;
+            height: 40px;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            z-index: 4;
+            transition: left 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+        }
+        /* Carro deportivo con CSS */
+        #carro .cuerpo {
+            width: 80px;
+            height: 24px;
+            background: linear-gradient(90deg, #1976d2 60%, #64b5f6 100%);
+            border-radius: 12px 30px 18px 12px/16px 18px 18px 16px;
+            position: absolute;
+            top: 8px;
+            left: 0;
+            box-shadow: 0 2px 8px #0006;
+        }
+        #carro .ventana {
+            width: 32px;
+            height: 14px;
+            background: #e3f2fd;
+            border-radius: 8px 12px 10px 8px/8px 10px 10px 8px;
+            position: absolute;
+            top: 4px;
+            left: 28px;
+            border: 2px solid #90caf9;
+        }
+        #carro .aleron {
+            width: 18px;
+            height: 8px;
+            background: #263238;
+            position: absolute;
+            top: 2px;
+            left: 0;
+            border-radius: 4px 2px 8px 2px;
+        }
+        #carro .llanta {
+            width: 16px;
+            height: 16px;
+            background: #222;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -6px;
+            box-shadow: 0 0 0 3px #757575;
+        }
+        #carro .llanta.izq { left: 10px; }
+        #carro .llanta.der { right: 10px; }
+        #carro .faro {
+            width: 8px;
+            height: 8px;
+            background: #fffde7;
+            border-radius: 50%;
+            position: absolute;
+            right: 2px;
+            top: 14px;
+            box-shadow: 0 0 8px 2px #fffde7;
+        }
+        /* Preguntas y opciones */
+        #pregunta {
+            margin: 40px auto 0 auto;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 18px 18px 0 0;
+            box-shadow: 0 4px 16px #0002;
+            padding: 24px 30px 10px 30px;
+            font-size: 1.3em;
+            color: #263238;
+            font-family: 'Montserrat', Arial, sans-serif;
+            letter-spacing: 1px;
+        }
+        #opciones {
+            max-width: 600px;
+            margin: 0 auto 0 auto;
+            background: #fff;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 4px 16px #0002;
+            padding: 10px 30px 24px 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+        #mensaje {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 1.2em;
+            font-family: 'Montserrat', Arial, sans-serif;
+            color: #388e3c;
+            min-height: 32px;
+        }
+        button {
+            background: linear-gradient(90deg, #1976d2 60%, #64b5f6 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 32px;
+            font-size: 1.1em;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #1976d255;
+            transition: background 0.2s, transform 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #1565c0 60%, #42a5f5 100%);
+            transform: scale(1.07);
+        }
+        @media (max-width: 800px) {
+            #pista { width: 98vw; }
+            #pregunta, #opciones { max-width: 96vw; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Carrera: Edad de los Metales</h1>
+    <div id="temporizador" style="text-align:center;font-size:1.3em;font-family:'Montserrat',Arial,sans-serif;color:#e53935;margin-bottom:10px;"></div>
+    <div id="pista">
+        <div class="linea-pista"></div>
+        <div id="carro">
+            <div class="cuerpo"></div>
+            <div class="ventana"></div>
+            <div class="aleron"></div>
+            <div class="llanta izq"></div>
+            <div class="llanta der"></div>
+            <div class="faro"></div>
+        </div>
+        <div id="meta"></div>
+    </div>
+    <div id="pregunta"></div>
+    <div id="opciones"></div>
+    <div id="mensaje"></div>
+
+    <script>
+        // Preguntas del juego
+        const preguntas = [
+            {
+                pregunta: "¿Cuál es el primer periodo de la Edad de los Metales?",
+                opciones: ["Edad del Bronce", "Edad del Hierro", "Edad del Cobre"],
+                respuesta: "Edad del Cobre"
+            },
+            {
+                pregunta: "¿Qué metal permitió la fabricación de herramientas más resistentes?",
+                opciones: ["Cobre", "Hierro", "Oro"],
+                respuesta: "Hierro"
+            },
+            {
+                pregunta: "¿Qué invento importante surgió en la Edad de los Metales?",
+                opciones: ["La rueda", "La imprenta", "El papel"],
+                respuesta: "La rueda"
+            },
+            {
+                pregunta: "¿En qué edad se empezó a usar la aleación de cobre y estaño?",
+                opciones: ["Edad del Hierro", "Edad del Bronce", "Edad de Piedra"],
+                respuesta: "Edad del Bronce"
+            }
+        ];
+
+        let posicion = 0;
+        let preguntaActual = 0;
+        const meta = 604; // px (ajustado para el nuevo ancho de pista)
+
+        // TEMPORIZADOR
+        let tiempo = 60; // segundos
+        const temporizadorDiv = document.getElementById('temporizador');
+        function actualizarTemporizador() {
+            let min = Math.floor(tiempo / 60);
+            let seg = tiempo % 60;
+            temporizadorDiv.textContent = `⏰ Tiempo restante: ${min}:${seg.toString().padStart(2, '0')}`;
+        }
+        actualizarTemporizador();
+        const intervalo = setInterval(() => {
+            tiempo--;
+            actualizarTemporizador();
+            if (tiempo <= 0) {
+                clearInterval(intervalo);
+                temporizadorDiv.textContent = "¡Tiempo agotado!";
+                setTimeout(() => {
+                    window.location.href = "../Edad de los metales/EdadMetales.html";
+                }, 1200);
+            }
+        }, 1000);
+
+        function mostrarPregunta() {
+            if (preguntaActual >= preguntas.length) {
+                clearInterval(intervalo);
+                document.getElementById('mensaje').innerHTML = "<b>¡Ganaste la carrera y aprendiste sobre la Edad de los Metales!</b>";
+                document.getElementById('pregunta').innerHTML = "";
+                document.getElementById('opciones').innerHTML = "";
+                return;
+            }
+            const p = preguntas[preguntaActual];
+            document.getElementById('pregunta').innerHTML = `<span style="font-size:1.2em;">${p.pregunta}</span>`;
+            document.getElementById('opciones').innerHTML = "";
+            p.opciones.forEach(op => {
+                const btn = document.createElement('button');
+                btn.innerText = op;
+                btn.onclick = () => verificarRespuesta(op);
+                document.getElementById('opciones').appendChild(btn);
+            });
+        }
+
+        function verificarRespuesta(opcion) {
+            const p = preguntas[preguntaActual];
+            if (opcion === p.respuesta) {
+                document.getElementById('mensaje').innerHTML = "<span style='color:#388e3c;font-weight:bold;'>¡Correcto! Avanzas en la carrera.</span>";
+                avanzarCarro();
+                preguntaActual++;
+                setTimeout(() => {
+                    document.getElementById('mensaje').innerText = "";
+                    mostrarPregunta();
+                }, 1100);
+            } else {
+                document.getElementById('mensaje').innerHTML = "<span style='color:#e53935;font-weight:bold;'>Incorrecto. Intenta de nuevo.</span>";
+            }
+        }
+
+        function avanzarCarro() {
+            posicion += meta / preguntas.length;
+            document.getElementById('carro').style.left = posicion + "px";
+        }
+
+        // Iniciar juego
+        mostrarPregunta();
+    </script>
+</body>
+</html>

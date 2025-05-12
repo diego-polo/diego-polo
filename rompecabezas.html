@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rompecabezas Interactivo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            margin-top: 40px;
+        }
+        .piece, .slot {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .piece {
+            cursor: grab;
+            background-size: 300px 300px;
+            background-position: center;
+            transition: box-shadow 0.2s;
+        }
+        .piece:active {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .slot {
+            background-color: #fff;
+        }
+        .piece[data-id="1"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: 0 0; }
+        .piece[data-id="2"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: -100px 0; }
+        .piece[data-id="3"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: -200px 0; }
+        .piece[data-id="4"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: 0 -100px; }
+        .piece[data-id="5"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: -100px -100px; }
+        .piece[data-id="6"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: -200px -100px; }
+        .piece[data-id="7"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: 0 -200px; }
+        .piece[data-id="8"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: -100px -200px; }
+        .piece[data-id="9"] { background-image: url('https://talayots.es/wp-content/uploads/los-hombres-de-la-prehistoria-nomadas-se-desplazaban-constantemente.jpg'); background-position: -200px -200px; }
+
+        /* Temporizador elegante */
+        .timer {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 18px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            box-shadow: 0 6px 24px rgba(102,126,234,0.18);
+            letter-spacing: 1px;
+            border: 2px solid #fff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: background 0.3s;
+        }
+        .timer.ending {
+            background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { box-shadow: 0 0 16px #ff5858; }
+            to { box-shadow: 0 0 32px #f09819; }
+        }
+        h1 {
+            margin-top: 60px;
+            color: #333;
+            text-shadow: 0 2px 8px rgba(118,75,162,0.08);
+        }
+        p {
+            color: #555;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer" id="timer">Tiempo restante: 01:00</div>
+    <h1>Rompecabezas Interactivo</h1>
+    <p>Arrastra las piezas al lugar correcto.</p>
+    <div id="puzzle-container">
+        <div class="slot" data-id="1"></div>
+        <div class="slot" data-id="2"></div>
+        <div class="slot" data-id="3"></div>
+        <div class="slot" data-id="4"></div>
+        <div class="slot" data-id="5"></div>
+        <div class="slot" data-id="6"></div>
+        <div class="slot" data-id="7"></div>
+        <div class="slot" data-id="8"></div>
+        <div class="slot" data-id="9"></div>
+        <div class="piece" draggable="true" data-id="1"></div>
+        <div class="piece" draggable="true" data-id="2"></div>
+        <div class="piece" draggable="true" data-id="3"></div>
+        <div class="piece" draggable="true" data-id="4"></div>
+        <div class="piece" draggable="true" data-id="5"></div>
+        <div class="piece" draggable="true" data-id="6"></div>
+        <div class="piece" draggable="true" data-id="7"></div>
+        <div class="piece" draggable="true" data-id="8"></div>
+        <div class="piece" draggable="true" data-id="9"></div>
+    </div>
+
+    <script>
+        // Mezclar las piezas al inicio
+        (function mezclarPiezas() {
+            const container = document.getElementById('puzzle-container');
+            const piezas = Array.from(container.querySelectorAll('.piece'));
+            // Remover piezas del DOM
+            piezas.forEach(pieza => container.removeChild(pieza));
+            // Mezclar array
+            for (let i = piezas.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [piezas[i], piezas[j]] = [piezas[j], piezas[i]];
+            }
+            // Volver a agregar las piezas en orden aleatorio
+            piezas.forEach(pieza => container.appendChild(pieza));
+        })();
+
+        const pieces = document.querySelectorAll('.piece');
+        const slots = document.querySelectorAll('.slot');
+        let correctPieces = 0;
+
+        pieces.forEach(piece => {
+            piece.addEventListener('dragstart', dragStart);
+        });
+
+        slots.forEach(slot => {
+            slot.addEventListener('dragover', dragOver);
+            slot.addEventListener('drop', drop);
+        });
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const pieceId = e.dataTransfer.getData('text/plain');
+            const piece = document.querySelector(`.piece[data-id="${pieceId}"]`);
+            if (e.target.dataset.id === pieceId) {
+                e.target.appendChild(piece);
+                piece.style.cursor = 'default';
+                piece.setAttribute('draggable', 'false');
+                correctPieces++;
+                if (correctPieces === 9) {
+                    setTimeout(() => {
+                        alert('¡Felicidades! Has completado el rompecabezas.');
+                    }, 300);
+                }
+            }
+        }
+
+        // Temporizador de 1 minuto
+        let timeLeft = 60; // 1 minuto en segundos
+        const timerElement = document.getElementById('timer');
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `Tiempo restante: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft <= 10) {
+                timerElement.classList.add('ending');
+            } else {
+                timerElement.classList.remove('ending');
+            }
+
+            if (timeLeft > 0) {
+                timeLeft--;
+            } else {
+                alert('¡Tiempo agotado!');
+                window.location.href = "../Paleolitico/juegos_paleolitico.html";
+            }
+        }
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>

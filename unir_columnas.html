@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego de Unir Columnas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            margin-top: 40px;
+            color: #2d3a4b;
+            letter-spacing: 2px;
+            font-size: 2.5rem;
+        }
+        .timer {
+            font-size: 1.5rem;
+            color: #fff;
+            background: #4f8cff;
+            padding: 10px 30px;
+            border-radius: 30px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px #b3c6e0;
+            letter-spacing: 2px;
+        }
+        .columns-container {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin: 30px 0;
+        }
+        .column {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px #b3c6e0;
+            padding: 30px 20px;
+            min-width: 200px;
+        }
+        .column h2 {
+            text-align: center;
+            color: #4f8cff;
+            margin-bottom: 18px;
+            font-size: 1.2rem;
+        }
+        .item {
+            background: #f0f4fa;
+            border-radius: 12px;
+            margin: 10px 0;
+            padding: 12px 18px;
+            font-size: 1.1rem;
+            color: #2d3a4b;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        .item.selected {
+            background: #4f8cff;
+            color: #fff;
+            border: 2px solid #2d3a4b;
+        }
+        .item.matched {
+            background: #b3e6b3;
+            color: #2d3a4b;
+            cursor: default;
+            border: 2px solid #4f8cff;
+        }
+        .item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 8px auto;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px #b3c6e0;
+            background: #fff;
+        }
+        .lines-canvas {
+            position: absolute;
+            left: 0; top: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .game-area {
+            position: relative;
+            width: 600px;
+            min-height: 350px;
+        }
+        .btn-restart {
+            margin-top: 30px;
+            padding: 12px 32px;
+            background: #4f8cff;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #b3c6e0;
+            transition: background 0.2s;
+        }
+        .btn-restart:hover {
+            background: #2d3a4b;
+        }
+        .result {
+            font-size: 1.4rem;
+            margin-top: 25px;
+            color: #2d3a4b;
+            font-weight: bold;
+        }
+        @media (max-width: 700px) {
+            .game-area {
+                width: 98vw;
+                min-width: unset;
+            }
+            .columns-container {
+                gap: 10vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Unir Columnas</h1>
+    <div class="timer" id="timer">01:00</div>
+    <div class="game-area">
+        <canvas class="lines-canvas" id="linesCanvas"></canvas>
+        <div class="columns-container">
+            <div class="column" id="leftColumn">
+                <h2>Columna A</h2>
+                <!-- Items generados por JS -->
+            </div>
+            <div class="column" id="rightColumn">
+                <h2>Columna B</h2>
+                <!-- Items generados por JS -->
+            </div>
+        </div>
+    </div>
+    <button class="btn-restart" onclick="restartGame()">Reiniciar</button>
+    <div class="result" id="result"></div>
+    <script>
+        // Solo cobre, bronce e hierro
+        const pairs = [
+            { left: "Hierro", right: "Metal usado para herramientas y armas", img: "https://www.shutterstock.com/image-photo/iron-ore-used-metallurgical-industry-260nw-2505316319.jpg" },
+            { left: "Cobre", right: "Primer metal trabajado por el hombre", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/NatCopper.jpg/1200px-NatCopper.jpg" },
+            { left: "Bronce", right: "Aleación de cobre y estaño", img: "https://thumbs.dreamstime.com/b/pepita-de-bronce-18990132.jpg" }
+        ];
+
+        let leftItems = [];
+        let rightItems = [];
+        let matches = [];
+        let selectedLeft = null;
+        let selectedRight = null;
+        let timer = 60;
+        let timerInterval = null;
+        let gameEnded = false;
+
+        const leftColumn = document.getElementById('leftColumn');
+        const rightColumn = document.getElementById('rightColumn');
+        const resultDiv = document.getElementById('result');
+        const timerDiv = document.getElementById('timer');
+        const linesCanvas = document.getElementById('linesCanvas');
+        const gameArea = document.querySelector('.game-area');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function setupGame() {
+            // Reset
+            leftColumn.innerHTML = '<h2>Columna A</h2>';
+            rightColumn.innerHTML = '<h2>Columna B</h2>';
+            matches = [];
+            selectedLeft = null;
+            selectedRight = null;
+            resultDiv.textContent = '';
+            gameEnded = false;
+
+            // Shuffle and assign (palabras en posiciones aleatorias)
+            leftItems = pairs.map((p, idx) => ({ text: p.left, pairIdx: idx, img: p.img }));
+            rightItems = pairs.map((p, idx) => ({ text: p.right, pairIdx: idx }));
+            shuffle(leftItems);
+            shuffle(rightItems);
+
+            // Render left column con imagen
+            leftItems.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.dataset.idx = idx;
+                div.onclick = () => selectLeft(idx);
+
+                // Imagen arriba del texto
+                const img = document.createElement('img');
+                img.src = item.img;
+                img.alt = item.text;
+                div.appendChild(img);
+
+                div.appendChild(document.createTextNode(item.text));
+                leftColumn.appendChild(div);
+            });
+
+            // Render right column (sin imagen)
+            rightItems.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.textContent = item.text;
+                div.dataset.idx = idx;
+                div.onclick = () => selectRight(idx);
+                rightColumn.appendChild(div);
+            });
+
+            // Resize canvas
+            setTimeout(resizeCanvas, 100);
+            drawLines();
+        }
+
+        function selectLeft(idx) {
+            if (gameEnded) return;
+            if (matches.find(m => m.leftIdx === idx)) return;
+            selectedLeft = idx;
+            updateSelections();
+            if (selectedRight !== null) checkMatch();
+        }
+
+        function selectRight(idx) {
+            if (gameEnded) return;
+            if (matches.find(m => m.rightIdx === idx)) return;
+            selectedRight = idx;
+            updateSelections();
+            if (selectedLeft !== null) checkMatch();
+        }
+
+        function updateSelections() {
+            // Update left
+            Array.from(leftColumn.querySelectorAll('.item')).forEach((el, i) => {
+                el.classList.toggle('selected', selectedLeft === i);
+                el.classList.toggle('matched', matches.find(m => m.leftIdx === i));
+            });
+            // Update right
+            Array.from(rightColumn.querySelectorAll('.item')).forEach((el, i) => {
+                el.classList.toggle('selected', selectedRight === i);
+                el.classList.toggle('matched', matches.find(m => m.rightIdx === i));
+            });
+            drawLines();
+        }
+
+        function checkMatch() {
+            const leftPair = leftItems[selectedLeft].pairIdx;
+            const rightPair = rightItems[selectedRight].pairIdx;
+            if (leftPair === rightPair) {
+                matches.push({ leftIdx: selectedLeft, rightIdx: selectedRight });
+                selectedLeft = null;
+                selectedRight = null;
+                updateSelections();
+                drawLines();
+                if (matches.length === pairs.length) endGame(true);
+            } else {
+                setTimeout(() => {
+                    selectedLeft = null;
+                    selectedRight = null;
+                    updateSelections();
+                }, 700);
+            }
+        }
+
+        function drawLines() {
+            resizeCanvas();
+            const leftEls = Array.from(leftColumn.querySelectorAll('.item'));
+            const rightEls = Array.from(rightColumn.querySelectorAll('.item'));
+            const rectLeft = leftColumn.getBoundingClientRect();
+            const rectRight = rightColumn.getBoundingClientRect();
+            const rectGame = gameArea.getBoundingClientRect();
+
+            const ctx = linesCanvas.getContext('2d');
+            ctx.clearRect(0, 0, linesCanvas.width, linesCanvas.height);
+
+            matches.forEach(match => {
+                const leftEl = leftEls[match.leftIdx];
+                const rightEl = rightEls[match.rightIdx];
+                if (!leftEl || !rightEl) return;
+                const leftRect = leftEl.getBoundingClientRect();
+                const rightRect = rightEl.getBoundingClientRect();
+                const startX = leftRect.right - rectGame.left;
+                const startY = leftRect.top + leftRect.height / 2 - rectGame.top;
+                const endX = rightRect.left - rectGame.left;
+                const endY = rightRect.top + rightRect.height / 2 - rectGame.top;
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = "#4f8cff";
+                ctx.lineWidth = 4;
+                ctx.shadowColor = "#b3c6e0";
+                ctx.shadowBlur = 6;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw preview line if one selected
+            if (selectedLeft !== null && selectedRight === null) {
+                const leftEl = leftEls[selectedLeft];
+                if (leftEl) {
+                    const leftRect = leftEl.getBoundingClientRect();
+                    const startX = leftRect.right - rectGame.left;
+                    const startY = leftRect.top + leftRect.height / 2 - rectGame.top;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(startX + 120, startY);
+                    ctx.strokeStyle = "#ffb347";
+                    ctx.setLineDash([8, 8]);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+            if (selectedRight !== null && selectedLeft === null) {
+                const rightEl = rightEls[selectedRight];
+                if (rightEl) {
+                    const rightRect = rightEl.getBoundingClientRect();
+                    const endX = rightRect.left - rectGame.left;
+                    const endY = rightRect.top + rightRect.height / 2 - rectGame.top;
+                    ctx.beginPath();
+                    ctx.moveTo(endX - 120, endY);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = "#ffb347";
+                    ctx.setLineDash([8, 8]);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+
+        function resizeCanvas() {
+            const rect = gameArea.getBoundingClientRect();
+            linesCanvas.width = rect.width;
+            linesCanvas.height = rect.height;
+            linesCanvas.style.width = rect.width + 'px';
+            linesCanvas.style.height = rect.height + 'px';
+            linesCanvas.style.left = '0px';
+            linesCanvas.style.top = '0px';
+        }
+
+        function startTimer() {
+            timer = 60;
+            timerDiv.textContent = "01:00";
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameEnded) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+                timer--;
+                let min = Math.floor(timer / 60);
+                let sec = timer % 60;
+                timerDiv.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function endGame(won) {
+            gameEnded = true;
+            if (timerInterval) clearInterval(timerInterval);
+            if (won) {
+                resultDiv.textContent = "¡Felicidades! Has unido todas las columnas correctamente 🎉";
+            } else {
+                resultDiv.textContent = "¡Tiempo agotado! Intenta de nuevo ⏰";
+            }
+        }
+
+        function restartGame() {
+            setupGame();
+            startTimer();
+        }
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawLines();
+        });
+
+        // Inicializar juego
+        setupGame();
+        startTimer();
+    </script>
+</body>
+</html>

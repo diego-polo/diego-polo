@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pruebas ICFES - Edad de los Metales</title>
+    <style>
+        body {
+            background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3a4b;
+            margin-top: 30px;
+        }
+        #timer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 18px;
+            background: linear-gradient(90deg, #e0eafc 60%, #c7d2fe 100%);
+            border-radius: 18px;
+            width: 260px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 12px 0 12px 0;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.13);
+            border: 2px solid #3b82f6;
+            transition: box-shadow 0.2s;
+        }
+        #timer svg {
+            filter: drop-shadow(0 2px 6px #60a5fa55);
+        }
+        #timer.urgente {
+            background: linear-gradient(90deg, #fee2e2 60%, #fecaca 100%);
+            color: #dc2626;
+            border-color: #dc2626;
+            animation: parpadeo 0.7s infinite alternate;
+        }
+        @keyframes parpadeo {
+            from { box-shadow: 0 0 12px #dc2626; }
+            to   { box-shadow: 0 0 24px #f87171; }
+        }
+        form {
+            background: #fff;
+            max-width: 600px;
+            margin: 30px auto 0 auto;
+            padding: 30px 40px 20px 40px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+        }
+        ol {
+            padding-left: 18px;
+        }
+        li {
+            margin-bottom: 18px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        label {
+            display: block;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        label:hover {
+            background: #e3f0fc;
+        }
+        input[type="radio"] {
+            accent-color: #3b82f6;
+            margin-right: 8px;
+        }
+        button {
+            display: block;
+            margin: 25px auto 0 auto;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 36px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
+            transition: background 0.2s, transform 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+            transform: translateY(-2px) scale(1.03);
+        }
+        #resultado {
+            max-width: 600px;
+            margin: 30px auto 0 auto;
+            background: #f8fafc;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+            padding: 20px 30px;
+            font-size: 1.1em;
+        }
+        .correcta {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .incorrecta {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        @media (max-width: 700px) {
+            form, #resultado {
+                padding: 18px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba ICFES: Edad de los Metales</h1>
+    <div id="timer">
+        <svg width="32" height="32" viewBox="0 0 32 32" style="vertical-align: middle; margin-right: 8px;">
+            <circle cx="16" cy="16" r="14" fill="#e0eafc" stroke="#3b82f6" stroke-width="2"/>
+            <path d="M16 8 v8 l6 4" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:1.4em; letter-spacing:2px;" id="time">01:00</span>
+    </div>
+    <form id="icfesForm">
+        <ol>
+            <li>
+                ¿que significa metalurgía?
+                <ul>
+                    <li><label><input type="radio" name="q1" value="a"> a) Ciencia que estudia los fósiles</label></li>
+                    <li><label><input type="radio" name="q1" value="b"> b) Arte donde se funden los metales,se pasa a los moldes y se saca la forma deseada para crear herramientas</label></li>
+                    <li><label><input type="radio" name="q1" value="c"> c) Proceso de domesticación de animales</label></li>
+                    <li><label><input type="radio" name="q1" value="d"> d) Descubrimiento de la agricultura</label></li>
+                </ul>
+            </li>
+            <li>
+                ¿como se llama la segunda edad de la prehistoria?
+                <ul>
+                    <li><label><input type="radio" name="q2" value="a"> a) Edad de piedra</label></li>
+                    <li><label><input type="radio" name="q2" value="b"> b) Edad de hielo</label></li>
+                    <li><label><input type="radio" name="q2" value="c"> c) Edad de los metales</label></li>
+                    <li><label><input type="radio" name="q2" value="d"> d) Edad de bronce</label></li>
+                </ul>
+            </li>
+            <li>
+                ¿que clase de objetos se elaborarón en esta edad de la prehistoria?
+                <ul>
+                    <li><label><input type="radio" name="q3" value="a"> a) Vasijas de barro</label></li>
+                    <li><label><input type="radio" name="q3" value="b"> b) objetos de metal</label></li>
+                    <li><label><input type="radio" name="q3" value="c"> c) Pinturas rupestres</label></li>
+                    <li><label><input type="radio" name="q3" value="d"> d) Monumentos megalíticos</label></li>
+                </ul>
+            </li>
+            <li>
+                ¿los poblados en que se transformaron?
+                <ul>
+                    <li><label><input type="radio" name="q4" value="a"> a) Tribu nómada</label></li>
+                    <li><label><input type="radio" name="q4" value="b"> b) ciudades</label></li>
+                    <li><label><input type="radio" name="q4" value="c"> c) Campamentos de cazadores</label></li>
+                    <li><label><input type="radio" name="q4" value="d"> d) Aldeas temporales</label></li>
+                </ul>
+            </li>
+            <li>
+                ¿que surgío en esta edad de los metales para trabajar?
+                <ul>
+                    <li><label><input type="radio" name="q5" value="a"> a) El trueque</label></li>
+                    <li><label><input type="radio" name="q5" value="b"> b) La escritura</label></li>
+                    <li><label><input type="radio" name="q5" value="c"> c) las profeciones</label></li>
+                    <li><label><input type="radio" name="q5" value="d"> d) El comercio marítimo</label></li>
+                </ul>
+            </li>
+        </ol>
+        <button type="button" id="enviarBtn" onclick="revisarRespuestas()">Enviar</button>
+    </form>
+    <div id="resultado"></div>
+    <script>
+    // TEMPORIZADOR DE 1 MINUTO
+    let tiempo = 60;
+    const timeSpan = document.getElementById('time');
+    const timerDiv = document.getElementById('timer');
+    function actualizarTimer() {
+        let min = Math.floor(tiempo / 60);
+        let seg = tiempo % 60;
+        timeSpan.textContent = `${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}`;
+        if (tiempo <= 10) {
+            timerDiv.classList.add('urgente');
+        } else {
+            timerDiv.classList.remove('urgente');
+        }
+    }
+    actualizarTimer();
+    const intervalo = setInterval(() => {
+        tiempo--;
+        actualizarTimer();
+        if (tiempo <= 0) {
+            clearInterval(intervalo);
+            timeSpan.textContent = "00:00";
+            timerDiv.classList.remove('urgente');
+            document.getElementById('enviarBtn').disabled = true;
+            document.getElementById('resultado').innerHTML = "<span style='color:#dc2626;font-weight:bold;'>¡Tiempo agotado! Redirigiendo...</span>";
+            setTimeout(() => {
+                window.location.href = "../Edad de los metales/juegos_EdadMetales.html";
+            }, 1500);
+        }
+    }, 1000);
+
+    // RESPUESTAS CORRECTAS
+    const respuestas = {
+        q1: "b",
+        q2: "c",
+        q3: "b",
+        q4: "b",
+        q5: "c"
+    };
+
+    function revisarRespuestas() {
+        clearInterval(intervalo);
+        let correctas = 0;
+        let total = Object.keys(respuestas).length;
+        let resultadoHTML = "<h3>Resultados:</h3><ol>";
+        for (let i = 1; i <= total; i++) {
+            let q = "q" + i;
+            let seleccionada = (document.querySelector('input[name="' + q + '"]:checked') || {}).value;
+            if (!seleccionada) {
+                resultadoHTML += `<li><span class="incorrecta">No respondiste esta pregunta.</span></li>`;
+            } else if (seleccionada === respuestas[q]) {
+                resultadoHTML += `<li><span class="correcta">¡Correcta!</span></li>`;
+                correctas++;
+            } else {
+                resultadoHTML += `<li><span class="incorrecta">Incorrecta.</span> Respuesta correcta: <b>${respuestaTexto(q, respuestas[q])}</b></li>`;
+            }
+        }
+        resultadoHTML += `</ol><p><b>Tu puntaje: ${correctas} de ${total}</b></p>`;
+        document.getElementById('resultado').innerHTML = resultadoHTML;
+        document.getElementById('enviarBtn').disabled = true;
+    }
+
+    function respuestaTexto(q, valor) {
+        // Devuelve el texto de la respuesta correcta según el valor
+        const opciones = {
+            q1: {
+                a: "Ciencia que estudia los fósiles",
+                b: "Arte donde se funden los metales,se pasa a los moldes y se saca la forma deseada para crear herramientas",
+                c: "Proceso de domesticación de animales",
+                d: "Descubrimiento de la agricultura"
+            },
+            q2: {
+                a: "Edad de piedra",
+                b: "Edad de hielo",
+                c: "Edad de los metales",
+                d: "Edad de bronce"
+            },
+            q3: {
+                a: "Vasijas de barro",
+                b: "objetos de metal",
+                c: "Pinturas rupestres",
+                d: "Monumentos megalíticos"
+            },
+            q4: {
+                a: "Tribu nómada",
+                b: "ciudades",
+                c: "Campamentos de cazadores",
+                d: "Aldeas temporales"
+            },
+            q5: {
+                a: "El trueque",
+                b: "La escritura",
+                c: "las profeciones",
+                d: "El comercio marítimo"
+            }
+        };
+        return opciones[q][valor];
+    }
+    </script>
+</body>
+</html>
